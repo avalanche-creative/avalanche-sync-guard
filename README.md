@@ -144,21 +144,58 @@ request would add a query to every page view on a live site.
 
 ---
 
-## Installing on another site
+## One repo, sixteen sites
 
-Nothing in here is site-specific. Copy the folder into `wp-content/plugins/` and
-activate. Environment detection handles:
+This plugin lives in exactly one place:
 
-- **WP Engine** — via the `PWP_NAME` constant, so production and staging are told apart
-- **Local by Flywheel** — any `*.local` host
-- Anything else falls back to the hostname, which still works
+    ~/Local Sites/_shared/avalanche-sync-guard   ← the git repo, edit here
 
-## Getting it onto production
+Nothing in it is site-specific — environment detection uses the `PWP_NAME`
+constant on WP Engine and the `*.local` host on Local, falling back to the
+hostname anywhere else — so the same code runs everywhere.
 
-This is code, so it goes up with a **file** deploy — never as part of a database
-push. Two things to know:
+### Local sites: symlink
 
-1. Its first run on production logs a `baseline`, not a `push`. It can only compare
-   against stamps it wrote itself, so real detection starts from that point.
-2. Install it on **both** Local and production. The Local copy writes the stamp that
-   the production copy later reads to recognise a push.
+Each local site points at the shared clone rather than holding its own copy:
+
+    ln -s ~/Local\ Sites/_shared/avalanche-sync-guard \
+          ~/Local\ Sites/<site>/app/public/wp-content/plugins/avalanche-sync-guard
+
+Edit the repo, every local site sees it immediately. Each site still keeps its
+own log and settings — those live in that site's database and uploads folder,
+not in the plugin.
+
+Do **not** clone the repo separately into a second site. That is the trap
+`CLAUDE.md` describes: whichever copy commits first wins and the other quietly
+becomes a stale fork.
+
+### Production: GitHub releases
+
+A symlink cannot reach production — git stores the link, not the files, so a
+WP Engine deploy would land a broken plugin. Instead the plugin updates itself
+from GitHub releases (see `inc/class-asg-updater.php`).
+
+Install the zip once on each production site. From then on, tagging a release
+makes every site show "Update available" under Plugins, updating with one click
+like any plugin from wordpress.org. Sites check every six hours; the plugin row
+also carries a **Check for updates** link that clears the cache immediately.
+
+### Cutting a release
+
+    cd ~/Local\ Sites/_shared/avalanche-sync-guard
+    # bump Version: in the plugin header AND const VERSION, keep them identical
+    git commit -am "1.4.0 — what changed"
+    git tag v1.4.0
+    git push && git push --tags
+    gh release create v1.4.0 --title "1.4.0" --notes "What changed"
+
+The version in the header is what each site compares against the release tag, so
+a release whose tag is not higher than the installed version simply will not be
+offered. The updater strips a leading `v`, so `v1.4.0` and `1.4.0` both work.
+
+## Two things to know when it lands on a new site
+
+1. Its first run logs a `baseline`, not a `push`. It can only compare against
+   stamps it wrote itself, so real detection starts from that point.
+2. Install it on **both** Local and production. The Local copy writes the stamp
+   that the production copy later reads to recognise a push.
