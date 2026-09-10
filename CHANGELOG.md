@@ -18,6 +18,10 @@ nothing.
   on these sites that is four hours ahead of the people reading the log — this
   makes that visible instead of quietly wrong.
 - Self-updates from GitHub releases, so one repository feeds every site.
+- Sites whose plugin folder is a **symlink** into the shared clone are never
+  offered an update. Applying one would delete the symlink, write real files in
+  its place, and silently detach that site from the repo it tracks — and those
+  sites already run the newest code by definition.
 
 ## 1.2.0
 

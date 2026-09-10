@@ -131,6 +131,14 @@ class ASG_Updater {
 			return $transient;
 		}
 
+		// A development install symlinked to the shared clone must never be
+		// "updated": WordPress would delete the symlink, write real files in its
+		// place, and quietly detach the site from the repo it is meant to track.
+		// Those sites are already running the newest code by definition.
+		if ( $this->is_symlinked() ) {
+			return $transient;
+		}
+
 		$release = $this->latest_release();
 		if ( ! $release || empty( $release['zip'] ) ) {
 			return $transient;
@@ -252,6 +260,13 @@ class ASG_Updater {
 			return $links;
 		}
 
+		if ( $this->is_symlinked() ) {
+			$links[] = '<span style="color:#646970">'
+				. esc_html__( 'Symlinked to the shared repo — updates are managed in git, not here.', 'avalanche-sync-guard' )
+				. '</span>';
+			return $links;
+		}
+
 		$url = wp_nonce_url(
 			add_query_arg( 'asg_check_updates', '1', admin_url( 'plugins.php' ) ),
 			'asg_check_updates'
@@ -259,6 +274,15 @@ class ASG_Updater {
 
 		$links[] = '<a href="' . esc_url( $url ) . '">' . esc_html__( 'Check for updates', 'avalanche-sync-guard' ) . '</a>';
 		return $links;
+	}
+
+	/**
+	 * Is this install a symlink into the shared clone rather than a real copy?
+	 *
+	 * @return bool
+	 */
+	private function is_symlinked() {
+		return is_link( untrailingslashit( WP_PLUGIN_DIR ) . '/' . $this->slug );
 	}
 
 	/** Clears the cached lookup so the next page load re-checks GitHub. */
