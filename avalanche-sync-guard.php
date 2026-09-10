@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name:       Avalanche Sync Guard
- * Plugin URI:        https://github.com/AvalancheCreativeGR/avalanche-sync-guard
+ * Plugin URI:        https://github.com/avalanche-creative/avalanche-sync-guard
  * Description:       Records when this site's database moves between environments (Local Connect push/pull) plus the structural and content changes worth knowing about — pages published, custom post types created, plugins activated, permalinks changed. Includes a "work in progress" lock notice so clients don't edit content that is about to be overwritten.
  * Version:           1.3.0
  * Requires at least: 5.8
@@ -9,7 +9,7 @@
  * Author:            Avalanche Creative
  * License:           GPL-2.0-or-later
  * Text Domain:       avalanche-sync-guard
- * GitHub Plugin URI:  AvalancheCreativeGR/avalanche-sync-guard
+ * GitHub Plugin URI:  avalanche-creative/avalanche-sync-guard
  *
  * WHAT THIS IS FOR
  * ----------------
@@ -1554,7 +1554,7 @@ require_once __DIR__ . '/inc/class-asg-updater.php';
 
 $asg_updater = new ASG_Updater(
 	__FILE__,
-	'AvalancheCreativeGR/avalanche-sync-guard',
+	'avalanche-creative/avalanche-sync-guard',
 	Avalanche_Sync_Guard::VERSION
 );
 
